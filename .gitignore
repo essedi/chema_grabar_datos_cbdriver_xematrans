@@ -1,5 +1,4 @@
 logs/
-bulid/
-syntax: glob
 build/
+syntax: glob
 dist/
