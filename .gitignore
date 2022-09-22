@@ -2,3 +2,4 @@ logs/
 build/
 syntax: glob
 dist/
+.idea
