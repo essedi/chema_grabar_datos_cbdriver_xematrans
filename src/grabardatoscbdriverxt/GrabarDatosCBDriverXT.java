@@ -24,14 +24,14 @@ import java.util.logging.Logger;
  */
 public class GrabarDatosCBDriverXT {
 
-    private static final String SQLSERVER_IP = "192.168.0.5";
+    private static final String SQLSERVER_IP = "192.168.0.223";
     private static final String SQLSERVER_PORT = "1433";
     private static final String SQLSERVER_DATABASE = "XB01";
     private static final String SQLSERVER_USER = "exos";
     private static final String SQLSERVER_PASSWORD = "Pass3x0s";
     //private static final String SQLSERVER_URL = "jdbc:sqlserver://" + sqlserverIp + ":" + sqlserverPort + ";database=" + sqlserverDatabaseName + ";integratedSecurity=true;";
-    private static final String SQLSERVER_URL = "jdbc:sqlserver://" + SQLSERVER_IP + ":" + SQLSERVER_PORT + ";database=" + SQLSERVER_DATABASE +
-            ";user=" + SQLSERVER_USER + ";password=" + SQLSERVER_PASSWORD + ";";
+    private static final String SQLSERVER_URL = "jdbc:sqlserver://" + SQLSERVER_IP + ":" + SQLSERVER_PORT + ";database=" + SQLSERVER_DATABASE
+            + ";user=" + SQLSERVER_USER + ";password=" + SQLSERVER_PASSWORD + ";";
 
     /**
      * @param args the command line arguments
@@ -51,7 +51,8 @@ public class GrabarDatosCBDriverXT {
         String path = System.getProperty("java.library.path");
 
         // PRODUCCION
-        path = "C:\\Program Files\\EXOS\\grabarDatosCBDriverXT\\dist\\lib\\" + ";" + path;
+        path = "/home/exos/planificador/grabarDatosCBDriverXT/dist/lib/" + ";" + path;
+        //path = "C:\\Program Files\\EXOS\\grabarDatosCBDriverXT\\dist\\lib\\" + ";" + path;
         // HYDRA
         // path = "C:\\Users\\Exos\\Desktop\\grabarDatosCBDriverXT\\dist\\lib\\" + ";" + path;
         // LOCAL
@@ -72,8 +73,6 @@ public class GrabarDatosCBDriverXT {
             if (parametros.length == 11) {
                 grabarXT(parametros[0], parametros[1], parametros[2], parametros[3], parametros[4], parametros[5], parametros[6],
                         parametros[7], parametros[8], parametros[9], parametros[10]);
-//                dummy(parametros[0], parametros[1], parametros[2], parametros[3], parametros[4], parametros[5], parametros[6],
-//                        parametros[7], parametros[8], parametros[9], parametros[10]);
                 Logger.getLogger(GrabarDatosCBDriverXT.class.getName()).log(Level.INFO, "Valores grabados");
             } else {
                 Logger.getLogger(GrabarDatosCBDriverXT.class.getName()).log(Level.SEVERE, "Valores incorrectos");
@@ -88,7 +87,7 @@ public class GrabarDatosCBDriverXT {
     }
 
     private static void grabarXT(String estado, String tipo, String posicion, String codigoConductor, String horaInicio, String horaFin,
-                                 String codigoHojaRuta, String litrosRepostaje, String kmsInicio, String kmsFin, String matriculaCabeza) {
+            String codigoHojaRuta, String litrosRepostaje, String kmsInicio, String kmsFin, String matriculaCabeza) {
         String insertIntoXT = "INSERT INTO [CBDriver_Viajes] ([codigo_conductor], [fecha_hora], [matricula_cabeza], [codigo_HR], [estado], [litros_repostaje], [kilometros], [posicion_gps]) "
                 + " VALUES (?, ?, ?, ?, ?, ?, ?, ?); ";
 
@@ -98,70 +97,94 @@ public class GrabarDatosCBDriverXT {
                 ps.setString(3, matriculaCabeza);
                 ps.setString(4, codigoHojaRuta);
                 switch (estado) {
-                    case "estado_ruta" -> {
+                    case "estado_ruta": {
                         ps.setString(2, horaInicio);
                         ps.setNull(6, Types.DOUBLE);
                         ps.setString(8, posicion);
                         switch (tipo) {
-                            case "0" -> {
+                            case "0": {
                                 ps.setString(5, "Inicio ruta");
                                 try {
                                     ps.setInt(7, Integer.parseInt(kmsInicio));
-                                } catch (IncompatibleClassChangeError e) {
+                                } catch (Exception e) {
                                     ps.setNull(7, Types.INTEGER);
                                 }
+                                break;
                             }
-                            case "1" -> {
+                            case "1": {
                                 ps.setString(5, "Carga contenedor");
                                 ps.setNull(7, Types.INTEGER);
+                                break;
                             }
-                            case "2" -> {
+                            case "2": {
                                 ps.setString(5, "Llegada fábrica");
                                 ps.setNull(7, Types.INTEGER);
+                                break;
                             }
-                            case "3" -> {
+                            case "3": {
                                 ps.setString(5, "Salida fábrica");
                                 ps.setNull(7, Types.INTEGER);
+                                break;
                             }
-                            case "4" -> {
+                            case "4": {
                                 ps.setString(5, "Descarga contenedor");
                                 ps.setNull(7, Types.INTEGER);
+                                break;
                             }
-                            case "5" -> {
+                            case "5": {
                                 ps.setString(5, "Fin ruta");
                                 try {
                                     ps.setInt(7, Integer.parseInt(kmsFin));
-                                } catch (IncompatibleClassChangeError e) {
+                                } catch (Exception e) {
                                     ps.setNull(7, Types.INTEGER);
                                 }
+                                break;
                             }
-                            default -> {
+                            default: {
+                                break;
                             }
                         }
                     }
-                    case "control_horario" -> {
+                    case "control_horario": {
                         ps.setNull(6, Types.DOUBLE);
                         ps.setString(8, "");
                         if (horaFin != null && !horaFin.isEmpty()) {
                             ps.setString(2, horaFin);
                             ps.setString(5, "Fin día ");
-                            ps.setInt(7, Integer.parseInt(kmsFin));
+                            try {
+                                ps.setInt(7, Integer.parseInt(kmsFin));
+                            } catch (Exception e) {
+                                ps.setNull(7, Types.INTEGER);
+                            }
                         } else {
                             ps.setString(2, horaInicio);
                             ps.setString(5, "Inicio día ");
-                            ps.setInt(7, Integer.parseInt(kmsInicio));
+                            try {
+                                ps.setInt(7, Integer.parseInt(kmsInicio));
+                            } catch (Exception e) {
+                                ps.setNull(7, Types.INTEGER);
+                            }
                         }
+                        break;
                     }
-                    case "descanso" -> {
+                    case "descanso": {
                         ps.setNull(6, Types.DOUBLE);
                         ps.setNull(7, Types.INTEGER);
                         ps.setString(8, "");
                         String comentario = "";
                         switch (tipo) {
-                            case "0" -> comentario += "Obligatorio";
-                            case "1" -> comentario += "Comida";
-                            case "2" -> comentario += "Taller";
-                            default -> comentario += "Otro";
+                            case "0":
+                                comentario += "Obligatorio";
+                                break;
+                            case "1":
+                                comentario += "Comida";
+                                break;
+                            case "2":
+                                comentario += "Taller";
+                                break;
+                            default:
+                                comentario += "Otro";
+                                break;
                         }
                         if ((horaFin != null && !horaFin.isEmpty())) {
                             ps.setString(2, horaFin);
@@ -170,8 +193,9 @@ public class GrabarDatosCBDriverXT {
                             ps.setString(2, horaInicio);
                             ps.setString(5, "Inicio descanso: " + comentario);
                         }
+                        break;
                     }
-                    case "repostaje" -> {
+                    case "repostaje": {
                         ps.setString(2, horaInicio);
                         ps.setString(5, "Repostaje");
                         ps.setString(8, "");
@@ -185,6 +209,7 @@ public class GrabarDatosCBDriverXT {
                         } catch (IncompatibleClassChangeError e) {
                             ps.setNull(7, Types.INTEGER);
                         }
+                        break;
                     }
                 }
                 Logger.getLogger(GrabarDatosCBDriverXT.class.getName()).log(Level.INFO, "Intentando grabar:\n"
